@@ -16,6 +16,9 @@
 # Location of the huge base jail
 # ezjail_jailbase=${ezjail_jaildir}/basejail
 
+# Location of the shared files
+# ezjail_common=${ezjail_jaildir}/common
+
 # Location of your copy of FreeBSD's source tree
 # ezjail_sourcetree=/usr/src
 
