@@ -311,7 +311,12 @@ ezjail_splitworld() {
   # /etc/make.conf.
   if [ -f "${ezjail_examples}/example/etc/make.conf" -a ! -f "${ezjail_jailtemplate}/etc/make.conf" ]; then
     cp -p "${ezjail_examples}/example/etc/make.conf" "${ezjail_jailtemplate}/etc/"
-    mkdir -p ${ezjail_jailtemplate}/var/ports/packages ${ezjail_jailtemplate}/var/ports/distfiles
+    [ ! -d "${ezjail_jailtemplate}/opt" ] && mkdir -p ${ezjail_jailtemplate}/opt
+    [ ! -d "${ezjail_jailtemplate}/var/ports" ] && mkdir -p ${ezjail_jailtemplate}/var/ports
+    [ ! -d "${ezjail_jailtemplate}/root" ] && mkdir -p ${ezjail_jailtemplate}/root
+    ln -s /opt/packages  ${ezjail_jailtemplate}/var/ports/packages
+    ln -s /opt/distfiles ${ezjail_jailtemplate}/var/ports/distfiles
+    ln -s /opt/ccache    ${ezjail_jailtemplate}/root/.ccache
     echo "Note: a non-standard /etc/make.conf was copied to the template jail in order to get the ports collection running inside jails."
   fi
 
@@ -767,6 +772,7 @@ create)
     echo ${ezjail_devicelink} ${ezjail_rootdir} ufs rw 0 0 >> "/etc/fstab.${ezjail_safename}"
   fi
   echo ${ezjail_jailbase} ${ezjail_rootdir}/basejail nullfs ro 0 0 >> "/etc/fstab.${ezjail_safename}"
+  echo ${ezjail_common} ${ezjail_rootdir}/opt nullfs rw 0 0 >> "/etc/fstab.${ezjail_safename}"
 
   # now, where everything seems to have gone right, create control file in
   # ezjails config dir
@@ -781,7 +787,7 @@ create)
       [ $? -eq 0 ] || echo "Warning: Could not fully install flavour ${ezjail_flavour}."
 
       # if the packages are links and not files we have to copy them now
-      find "${ezjail_rootdir}/pkg/" -type l -exec cp -r -f {} {}.ezjail \; -exec mv {}.ezjail {} \;
+      [ -d "${ezjail_rootdir}/pkg" ] && find "${ezjail_rootdir}/pkg/" -type l -exec cp -r -f {} {}.ezjail \; -exec mv {}.ezjail {} \;
 
       # If an old style flavour config is found, make it auto run on jails startup
       if [ -f "${ezjail_rootdir}/ezjail.flavour" ]; then
